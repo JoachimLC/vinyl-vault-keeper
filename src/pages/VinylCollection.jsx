@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import RecordGrid from '../components/RecordGrid';
 import StatisticsPanel from '../components/StatisticsPanel';
 import AddRecordModal from '../components/AddRecordModal';
+import AlbumSuggestions from '../components/AlbumSuggestions';
 
 const VinylCollection = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -15,6 +16,7 @@ const VinylCollection = () => {
           Add New Record
         </Button>
       </div>
+      <AlbumSuggestions />
       <div className="space-y-8">
         <RecordGrid />
         <StatisticsPanel />
