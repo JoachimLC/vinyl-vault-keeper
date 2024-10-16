@@ -15,13 +15,9 @@ const VinylCollection = () => {
           Add New Record
         </Button>
       </div>
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="w-full md:w-2/3">
-          <RecordGrid />
-        </div>
-        <div className="w-full md:w-1/3">
-          <StatisticsPanel />
-        </div>
+      <div className="space-y-8">
+        <RecordGrid />
+        <StatisticsPanel />
       </div>
       <AddRecordModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
     </div>
