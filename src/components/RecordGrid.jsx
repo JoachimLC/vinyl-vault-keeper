@@ -16,14 +16,14 @@ const RecordGrid = () => {
 
   const [records, setRecords] = useState(initialRecords);
   const [sortBy, setSortBy] = useState('');
-  const [filterGenre, setFilterGenre] = useState('');
+  const [filterGenre, setFilterGenre] = useState('all');
 
   const genres = useMemo(() => [...new Set(initialRecords.map(record => record.genre))], [initialRecords]);
 
   const sortedAndFilteredRecords = useMemo(() => {
     let result = [...records];
     
-    if (filterGenre) {
+    if (filterGenre && filterGenre !== 'all') {
       result = result.filter(record => record.genre === filterGenre);
     }
 
@@ -56,7 +56,7 @@ const RecordGrid = () => {
             <SelectValue placeholder="Filter by genre..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Genres</SelectItem>
+            <SelectItem value="all">All Genres</SelectItem>
             {genres.map(genre => (
               <SelectItem key={genre} value={genre}>{genre}</SelectItem>
             ))}
