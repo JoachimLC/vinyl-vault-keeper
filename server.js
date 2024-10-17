@@ -73,7 +73,6 @@ app.get('/records', authenticateJWT, async (req, res) => {
 });
 
 // POST route to add a new record with file upload
-// POST route to add a new record with file upload
 app.post('/records', authenticateJWT, upload.single('cover'), async (req, res) => {
   try {
     console.log('Request body:', req.body);  // Log the form data
@@ -102,6 +101,62 @@ app.post('/records', authenticateJWT, upload.single('cover'), async (req, res) =
   }
 });
 
+// GET route to fetch statistics for the authenticated user
+app.get('/statistics', authenticateJWT, async (req, res) => {
+  try {
+    const totalRecords = await prisma.record.count({
+      where: { userId: req.user.id }, // Only count records for the logged-in user
+    });
+
+    const averageRating = await prisma.record.aggregate({
+      _avg: { rating: true },
+      where: { userId: req.user.id }, // Only calculate average for the user's records
+    });
+
+    const topArtist = await prisma.record.groupBy({
+      by: ['artist'],
+      _count: { artist: true },
+      where: { userId: req.user.id }, // Only for the user's records
+      orderBy: { _count: { artist: 'desc' } },
+      take: 1,
+    });
+
+    const newestRecord = await prisma.record.findFirst({
+      where: { userId: req.user.id },
+      orderBy: { year: 'desc' },
+    });
+
+    const oldestRecord = await prisma.record.findFirst({
+      where: { userId: req.user.id },
+      orderBy: { year: 'asc' },
+    });
+
+    const genreData = await prisma.record.groupBy({
+      by: ['genre'],
+      _count: { genre: true },
+      where: { userId: req.user.id }, // Only for the user's records
+    });
+
+    const decadeData = await prisma.record.groupBy({
+      by: ['year'],
+      _count: { year: true },
+      where: { userId: req.user.id }, // Only for the user's records
+    });
+
+    res.json({
+      totalRecords,
+      averageRating: averageRating._avg.rating || 0,
+      topArtist: topArtist[0]?.artist || 'N/A',
+      newestRecord: newestRecord ? `${newestRecord.title} (${newestRecord.year})` : 'N/A',
+      oldestRecord: oldestRecord ? `${oldestRecord.title} (${oldestRecord.year})` : 'N/A',
+      genreData,
+      decadeData,
+    });
+  } catch (error) {
+    console.error('Error fetching statistics:', error);
+    res.status(500).json({ error: 'An error occurred while fetching statistics' });
+  }
+});
 
 // Register route
 app.post('/register', async (req, res) => {
