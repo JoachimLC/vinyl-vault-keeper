@@ -13,19 +13,22 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model Record {
-  id        Int     @id @default(autoincrement())
-  title     String
-  artist    String
-  year      Int
-  label     String
-  genre     String
-  rating    Int     @default(0) // Set a default value for rating
-  cover     String?
-}
-
 model User {
   id       Int      @id @default(autoincrement())
   email    String   @unique
   password String
+  records  Record[] // A user has many records
+}
+
+model Record {
+  id       Int     @id @default(autoincrement())
+  title    String
+  artist   String
+  year     Int
+  label    String
+  genre    String
+  cover    String?
+  rating   Int
+  user     User    @relation(fields: [userId], references: [id]) // Relation to the user
+  userId   Int     // Foreign key to link record to a user
 }

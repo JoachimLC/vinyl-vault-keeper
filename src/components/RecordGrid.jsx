@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Edit, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import axios from 'axios'; // Installer axios med `npm install axios`
+import axios from 'axios';
 
 const RecordGrid = () => {
   const [records, setRecords] = useState([]);

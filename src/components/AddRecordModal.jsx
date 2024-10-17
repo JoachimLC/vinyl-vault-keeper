@@ -32,7 +32,7 @@ const AddRecordModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const formDataObj = new FormData();
     formDataObj.append('title', formData.title);
     formDataObj.append('artist', formData.artist);
@@ -40,18 +40,18 @@ const AddRecordModal = ({ isOpen, onClose }) => {
     formDataObj.append('label', formData.label);
     formDataObj.append('genre', formData.genre);
     formDataObj.append('rating', parseInt(formData.rating, 10));
-
+  
     if (formData.cover) {
       formDataObj.append('cover', formData.cover);
     }
-
+  
     const token = localStorage.getItem('token');
-
+  
     try {
       const response = await axios.post('http://localhost:5000/records', formDataObj, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`, // Include the JWT token
+          Authorization: `Bearer ${token}`,  // Include the JWT token
         },
       });
       console.log('New record added:', response.data);
