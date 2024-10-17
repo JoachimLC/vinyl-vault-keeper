@@ -1,34 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import axios from 'axios';
 
 const StatisticsPanel = () => {
-  // TODO: Replace with actual data
-  const stats = {
-    totalRecords: 50,
-    averageRating: 4.2,
-    topArtist: 'The Beatles',
-    totalPlaytime: '2d 5h 30m',
-    mostCommonDecade: '1970s',
-    newestRecord: 'Album X (2023)',
-    oldestRecord: 'Album Y (1956)',
-  };
+  const [stats, setStats] = useState(null);
 
-  const genreData = [
-    { name: 'Rock', value: 20 },
-    { name: 'Pop', value: 15 },
-    { name: 'Jazz', value: 10 },
-    { name: 'Classical', value: 5 },
-  ];
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/statistics', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the JWT token
+          },
+        });
+        console.log('Statistics fetched:', response.data);
+        setStats(response.data);
+      } catch (error) {
+        console.error('Error fetching statistics:', error);
+      }
+    };
 
-  const decadeData = [
-    { name: '1960s', count: 5 },
-    { name: '1970s', count: 15 },
-    { name: '1980s', count: 10 },
-    { name: '1990s', count: 8 },
-    { name: '2000s', count: 7 },
-    { name: '2010s', count: 5 },
-  ];
+    fetchStatistics();
+  }, []);
+
+  if (!stats) {
+    return <p>Loading statistics...</p>;
+  }
+
+  const genreData = stats.genreData.map(genre => ({
+    name: genre.genre,
+    value: genre._count.genre,
+  }));
+
+  const decadeData = stats.decadeData.map(decade => {
+    const decadeLabel = `${Math.floor(decade.year / 10) * 10}s`;
+    return {
+      name: decadeLabel,
+      count: decade._count.year,
+    };
+  });
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -42,8 +54,6 @@ const StatisticsPanel = () => {
           <StatItem title="Total Records" value={stats.totalRecords} />
           <StatItem title="Average Rating" value={stats.averageRating.toFixed(1)} />
           <StatItem title="Top Artist" value={stats.topArtist} />
-          <StatItem title="Total Playtime" value={stats.totalPlaytime} />
-          <StatItem title="Most Common Decade" value={stats.mostCommonDecade} />
           <StatItem title="Newest Record" value={stats.newestRecord} />
           <StatItem title="Oldest Record" value={stats.oldestRecord} />
         </div>
@@ -68,14 +78,6 @@ const StatisticsPanel = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center mt-2">
-              {genreData.map((entry, index) => (
-                <div key={`legend-${index}`} className="flex items-center mr-4">
-                  <div className="w-3 h-3 mr-1" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                  <span className="text-xs">{entry.name}</span>
-                </div>
-              ))}
-            </div>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Records by Decade</h3>

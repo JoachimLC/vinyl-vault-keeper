@@ -1,28 +1,38 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Edit, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import axios from 'axios'; // Installer axios med `npm install axios`
 
 const RecordGrid = () => {
-  // TODO: Replace with actual data fetching logic
-  const initialRecords = [
-    { id: 1, title: 'Album 1', artist: 'Artist 1', year: 2021, genre: 'Rock', rating: 4, cover: 'https://picsum.photos/200' },
-    { id: 2, title: 'Album 2', artist: 'Artist 2', year: 2019, genre: 'Pop', rating: 5, cover: 'https://picsum.photos/201' },
-    { id: 3, title: 'Album 3', artist: 'Artist 3', year: 2020, genre: 'Jazz', rating: 3, cover: 'https://picsum.photos/202' },
-    { id: 4, title: 'Album 4', artist: 'Artist 4', year: 2018, genre: 'Rock', rating: 4, cover: 'https://picsum.photos/203' },
-    { id: 5, title: 'Album 5', artist: 'Artist 5', year: 2022, genre: 'Classical', rating: 5, cover: 'https://picsum.photos/204' },
-  ];
-
-  const [records, setRecords] = useState(initialRecords);
+  const [records, setRecords] = useState([]);
   const [sortBy, setSortBy] = useState('');
   const [filterGenre, setFilterGenre] = useState('all');
 
-  const genres = useMemo(() => [...new Set(initialRecords.map(record => record.genre))], [initialRecords]);
+  useEffect(() => {
+    const fetchRecords = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/records', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the JWT token
+          },
+        });
+        setRecords(response.data);
+      } catch (error) {
+        console.error('Error fetching records:', error);
+      }
+    };
+
+    fetchRecords();
+  }, []);
+
+  const genres = useMemo(() => [...new Set(records.map(record => record.genre))], [records]);
 
   const sortedAndFilteredRecords = useMemo(() => {
     let result = [...records];
-    
+
     if (filterGenre && filterGenre !== 'all') {
       result = result.filter(record => record.genre === filterGenre);
     }
@@ -63,31 +73,36 @@ const RecordGrid = () => {
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedAndFilteredRecords.map((record) => (
-          <Card key={record.id} className="overflow-hidden transition-shadow hover:shadow-lg">
-            <img src={record.cover} alt={record.title} className="w-full h-48 object-cover" />
-            <CardContent className="p-4">
-              <h3 className="text-lg font-semibold">{record.title}</h3>
-              <p className="text-sm text-gray-600">{record.artist}</p>
-              <p className="text-sm text-gray-500">{record.year} • {record.genre}</p>
-              <div className="flex items-center mt-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`h-4 w-4 ${i < record.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                ))}
-              </div>
-            </CardContent>
-            <CardFooter className="bg-gray-50 p-4 flex justify-end space-x-2">
-              <Button variant="ghost" size="icon">
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+
+      {sortedAndFilteredRecords.length === 0 ? (
+        <p className="text-center text-gray-500">No records found. Add some to start your collection!</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedAndFilteredRecords.map((record) => (
+            <Card key={record.id} className="overflow-hidden transition-shadow hover:shadow-lg">
+              <img src={record.cover} alt={record.title} className="w-full h-48 object-cover" />
+              <CardContent className="p-4">
+                <h3 className="text-lg font-semibold">{record.title}</h3>
+                <p className="text-sm text-gray-600">{record.artist}</p>
+                <p className="text-sm text-gray-500">{record.year} • {record.genre}</p>
+                <div className="flex items-center mt-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className={`h-4 w-4 ${i < record.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="bg-gray-50 p-4 flex justify-end space-x-2">
+                <Button variant="ghost" size="icon">
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

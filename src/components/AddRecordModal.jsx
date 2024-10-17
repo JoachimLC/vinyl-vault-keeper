@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import axios from 'axios';
 
 const AddRecordModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const AddRecordModal = ({ isOpen, onClose }) => {
     label: '',
     genre: '',
     cover: null,
+    rating: '',
   });
 
   const handleInputChange = (e) => {
@@ -28,11 +30,35 @@ const AddRecordModal = ({ isOpen, onClose }) => {
     setFormData(prev => ({ ...prev, cover: e.target.files[0] }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement record addition logic
-    console.log('New record:', formData);
-    onClose();
+
+    const formDataObj = new FormData();
+    formDataObj.append('title', formData.title);
+    formDataObj.append('artist', formData.artist);
+    formDataObj.append('year', formData.year);
+    formDataObj.append('label', formData.label);
+    formDataObj.append('genre', formData.genre);
+    formDataObj.append('rating', parseInt(formData.rating, 10));
+
+    if (formData.cover) {
+      formDataObj.append('cover', formData.cover);
+    }
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await axios.post('http://localhost:5000/records', formDataObj, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`, // Include the JWT token
+        },
+      });
+      console.log('New record added:', response.data);
+      onClose();
+    } catch (error) {
+      console.error('Error adding record:', error);
+    }
   };
 
   return (
@@ -107,6 +133,19 @@ const AddRecordModal = ({ isOpen, onClose }) => {
                   <SelectItem value="classical">Classical</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="rating" className="text-right">
+                Rating
+              </Label>
+              <Input
+                id="rating"
+                name="rating"
+                type="number"
+                value={formData.rating}
+                onChange={handleInputChange}
+                className="col-span-3"
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="cover" className="text-right">
